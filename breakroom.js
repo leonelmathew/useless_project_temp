@@ -763,35 +763,76 @@
       }
     });
 
-    // ── Timer ──
-    const BREAK_DURATION = 20 * 60;
-    let timeLeft = BREAK_DURATION;
+    // ── Timer (synced with background/popup) ──
     const timerDisplay = document.getElementById("timer");
     const timerStatus = document.getElementById("timerStatus");
+    let lastShownMode = null;
 
-    function updateTimerDisplay() {
-      const mins = Math.floor(timeLeft / 60);
-      const secs = timeLeft % 60;
-      timerDisplay.textContent =
-        String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
+    function applyWorkMode(state) {
+      if (!state) return;
+      const isWork = state.mode === "work";
+      document.body.classList.toggle("work-mode", isWork);
     }
 
-    const countdown = setInterval(() => {
-      timeLeft--;
-      updateTimerDisplay();
+    function updateTimerDisplay(state) {
+      if (!state) return;
+      const mins = Math.floor(state.timeLeft / 60);
+      const secs = state.timeLeft % 60;
+      timerDisplay.textContent =
+        String(mins).padStart(2, "0") + ":" + String(secs).padStart(2, "0");
 
-      // Rotate status messages every 4 minutes
-      if (timeLeft > 0 && timeLeft % 240 === 0) {
+      if (state.mode !== lastShownMode) {
+        lastShownMode = state.mode;
+        timerStatus.textContent =
+          state.mode === "break"
+            ? "Status: Efficiently doing nothing..."
+            : "Status: Dreaded work session... hide the snacks!";
+      }
+    }
+
+    function getTimerState() {
+      return new Promise(function (resolve) {
+        if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+          chrome.storage.local.get(["timerState"], function (data) {
+            resolve(data.timerState || null);
+          });
+        } else {
+          resolve(null);
+        }
+      });
+    }
+
+    function broadcastStatus(state) {
+      // Rotate break status messages every 4 minutes across sessions
+      if (state && state.mode === "break" && state.timeLeft > 0 && state.timeLeft % 240 === 0) {
         timerStatus.textContent =
           TIMER_STATUSES[Math.floor(Math.random() * TIMER_STATUSES.length)];
       }
-
-      if (timeLeft <= 0) {
-        clearInterval(countdown);
-        timerDisplay.textContent = "00:00";
+      if (state && state.timeLeft <= 0) {
         timerStatus.textContent = "Break time expired. Time to pretend to work again!";
+        lastShownMode = "over";
+      }
+    }
+
+    // Poll the shared state from chrome.storage every second so breakroom
+    // stays in sync with the background service worker (and thus the popup).
+    setInterval(async () => {
+      const state = await getTimerState();
+      if (state) {
+        updateTimerDisplay(state);
+        broadcastStatus(state);
+        applyWorkMode(state);
+
+        if (state.isRunning === false && lastShownMode !== "paused") {
+          lastShownMode = "paused";
+          timerStatus.textContent =
+            state.mode === "break"
+              ? "Status: Timer paused. Go back when ready."
+              : "Status: Timer paused. Work can wait.";
+        }
       }
     }, 1000);
+
 
     // ── Bubble Wrap ──
     const grid = document.getElementById("bubbleGrid");

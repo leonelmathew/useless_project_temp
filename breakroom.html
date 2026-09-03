@@ -103,6 +103,55 @@
       color: var(--accent);
     }
 
+    .heading-break {
+      text-decoration: none;
+      transition: color 0.3s, text-decoration 0.3s;
+    }
+
+    /* Work Mode: strikethrough "Break" */
+    body.work-mode .heading-break {
+      text-decoration: line-through;
+      text-decoration-thickness: 3px;
+      text-decoration-color: var(--danger);
+      color: var(--muted);
+    }
+
+    .work-banner {
+      display: none;
+      margin-bottom: 12px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: #4c0519;
+      border: 1px solid #e11d48;
+      color: #fb7185;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    body.work-mode .work-banner {
+      display: block;
+    }
+
+    body.work-mode .card {
+      border-color: var(--danger);
+      box-shadow: 0 20px 25px -5px rgba(239, 68, 68, 0.2);
+    }
+
+    body.work-mode .timer-display {
+      color: var(--danger);
+    }
+
+    body.work-mode .tagline {
+      color: var(--subtext);
+    }
+
+    body.work-mode .hero-emoji {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+
     .tagline {
       color: var(--subtext);
       font-size: 15px;
@@ -519,7 +568,9 @@
       &#x1F6CB;&#xFE0F;
     </div>
 
-    <h1>The Break Room</h1>
+    <div class="work-banner">Work Time - Get Back To It!</div>
+
+    <h1>The <span class="heading-break">Break</span> Room</h1>
     <p class="tagline">
       Your task was forcibly terminated for your own well-being.<br>
       Please enjoy your mandatory anti-productivity window.
