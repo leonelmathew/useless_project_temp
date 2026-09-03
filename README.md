@@ -2,47 +2,49 @@
 
 
 
-# [Project Name] 🎯
+# Anti-Productivity Timer 🎯
 
 
 ## Basic Details
-### Team Name: [Name]
+### Team Name: Double Horse Putt Podi
 
 
 ### Team Members
-- Team Lead: [Name] - [College]
-- Member 2: [Name] - [College]
-- Member 3: [Name] - [College]
+- Team Lead: Leonel Mathew Thuruthiyil - Model Engineering College
+- Member 2: Joe Francy - Model Engineering College
 
 ### Project Description
-[2-3 lines about what your project does]
+A Manifest V3 browser extension that violently defends your right to slack off by enforcing a strict 20-minute break for every 10 minutes of work. It automatically forcibly closes any active work tabs opened during break time and redirects you to an interactive Break Room.
 
 ### The Problem (that doesn't exist)
-[What ridiculous problem are you solving?]
+Workers and students suffer from severe burnout caused by excessive productivity, lack of mandatory bubble wrap popping, and dangerous exposure to actual work tasks without sufficient 20-minute resting windows.
 
 ### The Solution (that nobody asked for)
-[How are you solving it? Keep it fun!]
+An aggressive anti-productivity system that starts with break time first, actively intercepts and destroys work tabs, provides a emergency Boss Panic spreadsheet, and keeps you entertained with an arcade snack-catching game.
 
 ## Technical Details
 ### Technologies/Components Used
 For Software:
-- [Languages used]
-- [Frameworks used]
-- [Libraries used]
-- [Tools used]
+- JavaScript (ES6+), HTML5, CSS3
 
-For Hardware:
-- [List main components]
-- [List specifications]
-- [List tools required]
+- Chrome Extension API (Manifest V3 Service Workers, Alarms, Storage, Tabs)
+
+- Web Audio API (Synthesized sound effects)
+
+- HTML5 Canvas API (Particle bursts & 2D Arcade Game)
 
 ### Implementation
-For Software:
+For Software: 
 # Installation
-[commands]
+1. Clone or download this repository to your local machine.
+2. Open Chrome and navigate to chrome://extensions/.
+3. Enable "Developer mode" in the top-right corner.
+4. Click "Load unpacked" and select the project directory.
 
 # Run
-[commands]
+1. Click the extension icon in your Chrome toolbar to open the popup.
+2. Click "Start Slacking Off" to initiate the timer.
+3. Enjoy your mandatory 20-minute break while any new work tabs are forcibly closed.
 
 ### Project Documentation
 For Software:
