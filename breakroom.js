@@ -69,6 +69,8 @@
     game_hit: "sound-hit.mp3",
     game_over: "sound-gameover.mp3",
     game_miss: "sound-miss.mp3",
+    game_over_low: "sound-gameover-low.mp3",
+    game_over_high: "sound-gameover-high.mp3",
   };
 
   function autoLoadSounds() {
@@ -415,9 +417,11 @@
         o.stop(actx.currentTime + 0.15);
       } catch (_) {}
     }
-
-    function playGameOverSound() {
-      const custom = getOrCreateAudio("game_over");
+    
+    function playGameOverSound(score) {
+      // Use different sound based on score (<300 vs >=300)
+      const soundName = score >= 300 ? "game_over_high" : "game_over_low";
+      const custom = getOrCreateAudio(soundName);
       if (custom) {
         try { custom.currentTime = 0; custom.play(); } catch (_) {}
         return;
@@ -428,7 +432,8 @@
         const o = actx.createOscillator();
         const g = actx.createGain();
         o.type = "triangle";
-        o.frequency.setValueAtTime(400, actx.currentTime);
+        const startFreq = score >= 300 ? 600 : 300;
+        o.frequency.setValueAtTime(startFreq, actx.currentTime);
         o.frequency.exponentialRampToValueAtTime(150, actx.currentTime + 0.3);
         g.gain.setValueAtTime(0.15, actx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.01, actx.currentTime + 0.4);
@@ -634,7 +639,7 @@
     function endGame() {
       state.running = false;
       if (state.rafId) cancelAnimationFrame(state.rafId);
-      playGameOverSound();
+      setTimeout(() => playGameOverSound(state.score), 1000);
 
       // Show game over
       overlay.classList.remove("hidden");
