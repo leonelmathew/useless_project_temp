@@ -1,67 +1,115 @@
-const WORK_TIME = 10 * 60;  // 10 minutes
-const BREAK_TIME = 20 * 60; // 20 minutes
+// Anti-Productivity Timer - Background Service Worker
+// Enforces 20m Break / 10m Work. STARTS WITH BREAK FIRST!
 
-// Initialize state to BREAK mode on load
-chrome.runtime.onInstalled.addListener(() => {
-  chrome.storage.local.set({
-    mode: 'BREAK',
-    timeLeft: BREAK_TIME,
-    active: true
-  });
-  startTimer();
-});
+const DEFAULT_STATE = {
+  isRunning: false,
+  mode: 'break', // starts with break time first
+  breakSeconds: 20 * 60,
+  workSeconds: 10 * 60,
+  timeLeft: 20 * 60,
+  tabsClosedCount: 0
+};
 
-function startTimer() {
-  chrome.alarms.create('timerTick', { periodInMinutes: 1 / 60 });
-}
-
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name === 'timerTick') {
-    chrome.storage.local.get(['mode', 'timeLeft', 'active'], (data) => {
-      if (!data.active) return;
-
-      let newTime = data.timeLeft - 1;
-      let currentMode = data.mode;
-
-      if (newTime <= 0) {
-        currentMode = (currentMode === 'BREAK') ? 'WORK' : 'BREAK';
-        newTime = (currentMode === 'BREAK') ? BREAK_TIME : WORK_TIME;
-      }
-
-      chrome.storage.local.set({ mode: currentMode, timeLeft: newTime });
-
-      if (currentMode === 'BREAK') {
-        enforceBreakRoom();
-      }
-    });
+// Initialize default state
+chrome.runtime.onInstalled.addListener(async () => {
+  const data = await chrome.storage.local.get(['timerState']);
+  if (!data.timerState) {
+    await chrome.storage.local.set({ timerState: DEFAULT_STATE });
   }
+  chrome.alarms.create('antiProductivityTick', { periodInMinutes: 1 / 60 }); // 1 second
 });
 
-// Tab closure engine with safety locks
-async function enforceBreakRoom() {
-  const breakPageUrl = chrome.runtime.getURL('breakroom.html');
-  const tabs = await chrome.tabs.query({});
+// Alarm tick listener
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+  if (alarm.name !== 'antiProductivityTick') return;
+  const { timerState } = await chrome.storage.local.get(['timerState']);
+  if (!timerState || !timerState.isRunning) return;
 
-  let breakRoomExists = false;
+  let newTimeLeft = timerState.timeLeft - 1;
+  let newMode = timerState.mode;
 
-  for (const tab of tabs) {
-    if (!tab.url) continue;
-
-    // SAFE SPOTS: Ignore extensions page, new tabs, or internal chrome/brave pages
-    const isSafeUrl = tab.url.startsWith('chrome://') || 
-                      tab.url.startsWith('brave://') || 
-                      tab.url.startsWith('chrome-extension://');
-
-    if (tab.url.includes('breakroom.html')) {
-      breakRoomExists = true;
-    } else if (!isSafeUrl) {
-      // Close any actual work/web tab during break time
-      chrome.tabs.remove(tab.id);
+  if (newTimeLeft <= 0) {
+    if (timerState.mode === 'break') {
+      newMode = 'work';
+      newTimeLeft = timerState.workSeconds;
+    } else {
+      newMode = 'break';
+      newTimeLeft = timerState.breakSeconds;
+      // When break begins, enforce tab disruption!
+      enforceBreakRoom();
     }
   }
 
-  // Open the Break Room if it's not already open
-  if (!breakRoomExists) {
-    chrome.tabs.create({ url: breakPageUrl });
+  await chrome.storage.local.set({
+    timerState: {
+      ...timerState,
+      timeLeft: newTimeLeft,
+      mode: newMode
+    }
+  });
+
+  // Update badge on extension icon
+  const mins = Math.floor(newTimeLeft / 60);
+  const secs = newTimeLeft % 60;
+  const badgeText = mins > 0 ? `${mins}m` : `${secs}s`;
+  chrome.action.setBadgeText({ text: badgeText });
+  chrome.action.setBadgeBackgroundColor({
+    color: newMode === 'break' ? '#10b981' : '#f43f5e'
+  });
+
+  // If in break mode, ensure user is not working
+  if (newMode === 'break') {
+    checkActiveTabForWork();
+  }
+});
+
+// Monitor when user switches or updates tabs
+chrome.tabs.onActivated.addListener(() => {
+  checkActiveTabForWork();
+});
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.status === 'complete' || changeInfo.url) {
+    checkActiveTabForWork();
+  }
+});
+
+async function checkActiveTabForWork() {
+  const { timerState } = await chrome.storage.local.get(['timerState']);
+  if (!timerState || !timerState.isRunning || timerState.mode !== 'break') return;
+
+  const [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!activeTab || !activeTab.url) return;
+
+  const breakRoomUrl = chrome.runtime.getURL('breakroom.html');
+  if (activeTab.url.startsWith(breakRoomUrl) || activeTab.url.startsWith('chrome://')) {
+    return; // Break room and internal settings are permitted
+  }
+
+  // Work tab detected during break! Close it and redirect to Break Room!
+  console.log('Work detected during mandatory break! Closing tab:', activeTab.url);
+  try {
+    // Increment closed count
+    timerState.tabsClosedCount = (timerState.tabsClosedCount || 0) + 1;
+    await chrome.storage.local.set({ timerState });
+
+    // Open or switch to breakroom
+    await enforceBreakRoom();
+    // Close the unauthorized work tab
+    await chrome.tabs.remove(activeTab.id);
+  } catch (e) {
+    console.error('Error closing work tab:', e);
+  }
+}
+
+async function enforceBreakRoom() {
+  const breakRoomUrl = chrome.runtime.getURL('breakroom.html');
+  const tabs = await chrome.tabs.query({ currentWindow: true });
+  const existingBreakTab = tabs.find(t => t.url && t.url.startsWith(breakRoomUrl));
+
+  if (existingBreakTab && existingBreakTab.id) {
+    await chrome.tabs.update(existingBreakTab.id, { active: true });
+  } else {
+    await chrome.tabs.create({ url: breakRoomUrl, active: true });
   }
 }

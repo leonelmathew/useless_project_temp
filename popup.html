@@ -1,30 +1,130 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="utf-8">
   <style>
-    body { width: 200px; font-family: sans-serif; text-align: center; padding: 10px; }
-    #mode { font-weight: bold; font-size: 1.2rem; }
-    #time { font-size: 2rem; margin: 10px 0; }
+    body {
+      width: 320px;
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      box-sizing: border-box;
+    }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #334155;
+      padding-bottom: 10px;
+    }
+    .title {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #94a3b8;
+    }
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .badge.break {
+      background: #064e3b;
+      color: #34d399;
+      border: 1px solid #059669;
+    }
+    .badge.work {
+      background: #4c0519;
+      color: #fb7185;
+      border: 1px solid #e11d48;
+    }
+    .timer-display {
+      font-family: monospace;
+      font-size: 44px;
+      font-weight: 800;
+      text-align: center;
+      margin: 8px 0 16px;
+      color: #38bdf8;
+      background: #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      border: 1px solid #334155;
+    }
+    .start-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      background: #0284c7;
+      color: white;
+      transition: background 0.2s;
+    }
+    .start-btn:hover {
+      background: #0369a1;
+    }
+    .start-btn.running {
+      background: #e11d48;
+    }
+    .start-btn.running:hover {
+      background: #be123c;
+    }
+    .rule-box {
+      margin-top: 14px;
+      font-size: 11px;
+      color: #94a3b8;
+      background: #1e293b;
+      padding: 8px 10px;
+      border-radius: 6px;
+      line-height: 1.4;
+    }
+    .breakroom-link {
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+      color: #38bdf8;
+      font-size: 12px;
+      text-decoration: none;
+      cursor: pointer;
+    }
   </style>
 </head>
 <body>
-  <div id="mode">Loading...</div>
-  <div id="time">00:00</div>
+  <div class="header">
+    <span style="font-size: 22px;">🦥</span>
+    <div>
+      <div class="title">Anti-Productivity Timer</div>
+      <div class="subtitle">Useless Hackathon Edition</div>
+    </div>
+  </div>
 
-  <script>
-    function updateUI() {
-      chrome.storage.local.get(['mode', 'timeLeft'], (data) => {
-        if (!data.mode) return;
-        document.getElementById('mode').innerText = data.mode + " MODE";
-        
-        const mins = Math.floor(data.timeLeft / 60).toString().padStart(2, '0');
-        const secs = (data.timeLeft % 60).toString().padStart(2, '0');
-        document.getElementById('time').innerText = `${mins}:${secs}`;
-      });
-    }
+  <div style="text-align: center;">
+    <div id="modeBadge" class="badge break">🌴 Mandatory Break (20m)</div>
+    <div id="timerDisplay" class="timer-display">20:00</div>
+    <button id="startBtn" class="start-btn">Start Slacking Off</button>
+  </div>
 
-    setInterval(updateUI, 1000);
-    updateUI();
-  </script>
+  <div class="rule-box">
+    <strong>Rules of Slack:</strong><br>
+    • 20 min Break for every 10 min Work<br>
+    • Starts with <strong>Break first!</strong><br>
+    • All work tabs closed immediately during breaks.
+  </div>
+
+  <a id="openBreakRoom" class="breakroom-link">☕ Go to Break Room</a>
+
+  <script src="popup.js"></script>
 </body>
 </html>
