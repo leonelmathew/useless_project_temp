@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { width: 200px; font-family: sans-serif; text-align: center; padding: 10px; }
+    #mode { font-weight: bold; font-size: 1.2rem; }
+    #time { font-size: 2rem; margin: 10px 0; }
+  </style>
+</head>
+<body>
+  <div id="mode">Loading...</div>
+  <div id="time">00:00</div>
+
+  <script>
+    function updateUI() {
+      chrome.storage.local.get(['mode', 'timeLeft'], (data) => {
+        if (!data.mode) return;
+        document.getElementById('mode').innerText = data.mode + " MODE";
+        
+        const mins = Math.floor(data.timeLeft / 60).toString().padStart(2, '0');
+        const secs = (data.timeLeft % 60).toString().padStart(2, '0');
+        document.getElementById('time').innerText = `${mins}:${secs}`;
+      });
+    }
+
+    setInterval(updateUI, 1000);
+    updateUI();
+  </script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Anti-Productivity Timer",
+  "version": "1.0",
+  "description": "Forced 20-minute break before 10-minute work.",
+  "permissions": ["tabs", "storage", "alarms"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
