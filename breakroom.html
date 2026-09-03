@@ -1,14 +1,42 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>☕ The Break Room | Anti-Productivity Timer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="The Break Room - Your mandatory anti-productivity zone">
+  <title>The Break Room | Anti-Productivity Hub</title>
   <style>
-    body {
+    :root {
+      --bg: #0a0a0a;
+      --bg-alt: #141414;
+      --bg-deep: #000000;
+      --accent: #facc15;
+      --accent-hover: #eab308;
+      --text: #fafafa;
+      --subtext: #d4d4d4;
+      --muted: #a3a3a3;
+      --border: #facc15;
+      --border-soft: #292929;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --radius: 16px;
+      --radius-sm: 12px;
+      --radius-xs: 8px;
+      --shadow: 0 20px 25px -5px rgba(250, 204, 21, 0.15);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
       margin: 0;
-      background: #0f172a;
-      color: #f8fafc;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -16,74 +44,600 @@
       min-height: 100vh;
       text-align: center;
       padding: 24px;
+      user-select: none;
+      overflow-x: hidden;
     }
+
+    /* ── Particle Canvas ── */
+    #particleCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ── Main Card ── */
     .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
+      background: var(--bg-alt);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius);
       padding: 36px;
-      max-width: 600px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+      max-width: 550px;
+      width: 100%;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 10;
     }
+
+    /* ── Hero Emoji ── */
+    .hero-emoji {
+      font-size: 54px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.2s ease;
+    }
+
+    .hero-emoji:hover {
+      transform: scale(1.2) rotate(10deg);
+    }
+
+    @keyframes emoji-bounce {
+      0%   { transform: scale(1); }
+      30%  { transform: scale(1.3) translateY(-12px) rotate(-10deg); }
+      50%  { transform: scale(0.9) translateY(4px) rotate(5deg); }
+      70%  { transform: scale(1.15) translateY(-6px); }
+      100% { transform: scale(1) translateY(0) rotate(0deg); }
+    }
+
+    .hero-emoji.bouncing {
+      animation: emoji-bounce 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    /* ── Typography ── */
     h1 {
-      font-size: 32px;
-      margin: 0 0 12px 0;
-      color: #38bdf8;
+      font-size: 30px;
+      margin: 0 0 8px;
+      color: var(--accent);
     }
-    p {
-      color: #94a3b8;
+
+    .tagline {
+      color: var(--subtext);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+
+    h3 {
       font-size: 16px;
-      line-height: 1.6;
+      margin: 20px 0 4px;
+      color: var(--subtext);
     }
-    .quote-box {
-      background: #0f172a;
-      border-left: 4px solid #38bdf8;
+
+    /* ── Timer ── */
+    .timer-container {
+      background: var(--bg-deep);
       padding: 16px;
-      margin: 24px 0;
+      border-radius: var(--radius-sm);
+      margin: 16px 0;
+      border: 1px solid var(--border);
+    }
+
+    /* accent-colored top edge strip */
+    .timer-container {
+      position: relative;
+    }
+    .timer-container::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent);
+      border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    }
+
+    .timer-display {
+      font-size: 42px;
+      font-weight: 800;
+      font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+      color: var(--accent);
+      letter-spacing: 2px;
+    }
+
+    .timer-subtext {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* ── Quote ── */
+    .quote-box {
+      background: var(--bg-deep);
+      border-left: 4px solid var(--accent);
+      padding: 16px;
+      margin: 20px 0;
       border-radius: 4px;
       font-style: italic;
-      color: #e2e8f0;
-      font-size: 18px;
+      color: var(--text);
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.2s;
+      line-height: 1.5;
     }
+
+    .quote-box:hover {
+      background: #1a1a00;
+    }
+
+    /* ── Bubble Wrap ── */
     .bubble-wrap {
       display: grid;
       grid-template-columns: repeat(6, 1fr);
-      gap: 8px;
-      margin-top: 24px;
+      gap: 10px;
+      margin-top: 16px;
     }
+
     .bubble {
-      width: 44px;
-      height: 44px;
+      width: 100%;
+      aspect-ratio: 1;
       border-radius: 50%;
-      background: #38bdf8;
-      opacity: 0.8;
+      background: var(--accent);
+      opacity: 0.85;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: all 0.1s;
+      font-size: 11px;
+      font-weight: bold;
+      color: var(--bg-deep);
+      transition: all 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.2);
     }
+
+    .bubble:hover {
+      transform: scale(1.08);
+      opacity: 1;
+    }
+
     .bubble.popped {
-      background: #334155;
+      background: #3f3f3f;
       opacity: 0.3;
       cursor: default;
       transform: scale(0.85);
+      box-shadow: none;
+    }
+
+    /* ── Panic Button ── */
+    .panic-btn {
+      background: var(--danger);
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      font-weight: bold;
+      font-size: 14px;
+      border-radius: var(--radius-xs);
+      cursor: pointer;
+      margin-top: 20px;
+      transition: transform 0.1s, background 0.2s;
+      box-shadow: 0 4px 10px rgba(239, 68, 68, 0.3);
+    }
+
+    .panic-btn:hover {
+      background: var(--danger-hover);
+      transform: scale(1.03);
+    }
+
+    .panic-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* ── Fake Excel Overlay ── */
+    #fakeExcel {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #ffffff;
+      color: #000;
+      z-index: 9999;
+      font-family: Calibri, "Segoe UI", sans-serif;
+      text-align: left;
+      padding: 10px;
+    }
+
+    .excel-header {
+      background: #107c41;
+      color: white;
+      padding: 8px 16px;
+      font-weight: bold;
+      margin: -10px -10px 10px -10px;
+      font-size: 14px;
+    }
+
+    .excel-hint {
+      color: #555;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+
+    .excel-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .excel-table th,
+    .excel-table td {
+      border: 1px solid #d4d4d4;
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+
+    .excel-table th {
+      background: #f3f3f3;
+      font-weight: 600;
+    }
+
+    /* ── Screen Shake ── */
+    @keyframes screen-shake {
+      0%   { transform: translate(0, 0) rotate(0deg); }
+      10%  { transform: translate(-12px, 8px) rotate(-1deg); }
+      20%  { transform: translate(12px, -8px) rotate(1deg); }
+      30%  { transform: translate(-10px, -6px) rotate(-1.5deg); }
+      40%  { transform: translate(10px, 6px) rotate(1.5deg); }
+      50%  { transform: translate(-6px, 10px) rotate(-1deg); }
+      60%  { transform: translate(6px, -10px) rotate(1deg); }
+      70%  { transform: translate(-4px, 4px) rotate(-0.5deg); }
+      80%  { transform: translate(4px, -4px) rotate(0.5deg); }
+      90%  { transform: translate(-2px, 2px) rotate(0deg); }
+      100% { transform: translate(0, 0) rotate(0deg); }
+    }
+
+    body.shaking {
+      animation: screen-shake 0.45s ease-in-out;
+    }
+
+    /* ── Mini Game ── */
+    .game-section {
+      margin-top: 24px;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+    }
+
+    .game-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .game-header h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--subtext);
+    }
+
+    .game-score {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .game-score span {
+      color: var(--accent);
+      font-weight: 700;
+      font-family: monospace;
+    }
+
+    .game-canvas-wrap {
+      position: relative;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      line-height: 0;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 300px;
+      cursor: none;
+      image-rendering: pixelated;
+    }
+
+    .game-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.88);
+      z-index: 5;
+      gap: 12px;
+    }
+
+    .game-overlay.hidden {
+      display: none;
+    }
+
+    .game-overlay-title {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+    }
+
+    .game-overlay-sub {
+      font-size: 13px;
+      color: var(--subtext);
+      max-width: 260px;
+      line-height: 1.4;
+    }
+
+    .game-start-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: var(--radius-xs);
+      background: var(--accent);
+      color: var(--bg-deep);
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    .game-start-btn:hover {
+      background: var(--accent-hover);
+      transform: scale(1.03);
+    }
+
+    .game-controls-hint {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    /* ── Sound Settings ── */
+    .sound-settings {
+      margin-top: 20px;
+      border-top: 1px solid var(--border);
+      padding-top: 16px;
+    }
+
+    .sound-settings-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--subtext);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sound-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+      background: var(--bg-deep);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-xs);
+      padding: 10px 12px;
+    }
+
+    .sound-row-label {
+      font-size: 12px;
+      color: var(--subtext);
+      min-width: 72px;
+      flex-shrink: 0;
+    }
+
+    .sound-row-status {
+      font-size: 11px;
+      color: var(--muted);
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sound-row-status.active {
+      color: #34d399;
+    }
+
+    .sound-file-input {
+      display: none;
+    }
+
+    .sound-upload-btn {
+      padding: 5px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-alt);
+      color: var(--subtext);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .sound-upload-btn:hover {
+      background: var(--accent);
+      color: #000;
+    }
+
+    .sound-reset-btn {
+      padding: 5px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: color 0.2s;
+    }
+
+    .sound-reset-btn:hover {
+      color: var(--danger);
+    }
+
+    .sound-reset-btn.hidden {
+      display: none;
+    }
+
+    /* ── Footer ── */
+    .card-footer {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .card-footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .card-footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div style="font-size: 54px; margin-bottom: 12px;">🛋️</div>
-    <h1>Welcome to the Break Room</h1>
-    <p>Your work tab was forcibly terminated for your own well-being.<br>
-    Please enjoy your mandatory <strong>20 minutes of doing absolutely nothing</strong>.</p>
 
-    <div class="quote-box" id="quoteText">
+  <canvas id="particleCanvas" aria-hidden="true"></canvas>
+
+  <main class="card" role="main">
+    <div class="hero-emoji" id="heroEmoji" role="button" tabindex="0" aria-label="Click for random emoji and particles" title="Click me for maximum relaxation">
+      &#x1F6CB;&#xFE0F;
+    </div>
+
+    <h1>The Break Room</h1>
+    <p class="tagline">
+      Your task was forcibly terminated for your own well-being.<br>
+      Please enjoy your mandatory anti-productivity window.
+    </p>
+
+    <section class="timer-container" aria-label="Break timer">
+      <div class="timer-display" id="timer" aria-live="polite">20:00</div>
+      <div class="timer-subtext" id="timerStatus">Status: Efficiently doing nothing...</div>
+    </section>
+
+    <div class="quote-box" id="quoteText" role="button" tabindex="0" title="Click for new lazy motivation!" aria-label="Motivational quote">
       "Why do today what can be put off indefinitely?"
     </div>
 
-    <h3>Infinite Bubble Wrap (Productivity Neutralizer)</h3>
-    <div class="bubble-wrap" id="bubbleGrid"></div>
+    <h3>Infinite Bubble Wrap</h3>
+    <div class="bubble-wrap" id="bubbleGrid" role="grid" aria-label="Bubble wrap popping grid"></div>
+
+    <button class="panic-btn" id="panicBtn" aria-label="Boss is coming - activate fake spreadsheet">
+      BOSS IS COMING! (Press Space)
+    </button>
+
+    <!-- Mini Game: Catch the Snacks -->
+    <section class="game-section" aria-label="Mini game">
+      <div class="game-header">
+        <h3>Catch the Snacks</h3>
+        <div class="game-score">Score: <span id="gameScore">0</span></div>
+      </div>
+      <div class="game-canvas-wrap">
+        <canvas id="gameCanvas" aria-label="Catch the snacks game"></canvas>
+        <div class="game-overlay" id="gameOverlay">
+          <div class="game-overlay-title">Catch the Snacks</div>
+          <div class="game-overlay-sub">
+            Catch falling snacks to score points. Avoid work items or lose a life!
+          </div>
+          <button class="game-start-btn" id="gameStartBtn">Start Game</button>
+        </div>
+      </div>
+      <div class="game-controls-hint">Move: Arrow Keys / Mouse</div>
+    </section>
+
+    <!-- Sound Settings -->
+    <section class="sound-settings" aria-label="Sound settings">
+      <div class="sound-settings-title">Custom Sounds</div>
+
+      <div class="sound-row">
+        <span class="sound-row-label">Bubble Pop</span>
+        <span class="sound-row-status" id="popSoundStatus">Default</span>
+        <input type="file" class="sound-file-input" id="popSoundInput" accept="audio/*">
+        <button class="sound-upload-btn" id="popSoundUpload" aria-label="Upload custom pop sound">Upload</button>
+        <button class="sound-reset-btn hidden" id="popSoundReset" aria-label="Reset pop sound to default">Reset</button>
+      </div>
+
+      <div class="sound-row">
+        <span class="sound-row-label">Boss Siren</span>
+        <span class="sound-row-status" id="sirenSoundStatus">Default</span>
+        <input type="file" class="sound-file-input" id="sirenSoundInput" accept="audio/*">
+        <button class="sound-upload-btn" id="sirenSoundUpload" aria-label="Upload custom boss siren">Upload</button>
+        <button class="sound-reset-btn hidden" id="sirenSoundReset" aria-label="Reset siren sound to default">Reset</button>
+      </div>
+    </section>
+
+    <footer class="card-footer">
+      Anti-Productivity Timer v1.0 &mdash; Useless Hackathon Edition
+    </footer>
+  </main>
+
+  <!-- Fake Spreadsheet Overlay -->
+  <div id="fakeExcel" role="dialog" aria-label="Fake Excel spreadsheet">
+    <div class="excel-header">Q3_Q4_Synergy_Projections_FINAL_v2.xlsx - Excel</div>
+    <p class="excel-hint">Press [ESC] to return to safety.</p>
+    <table class="excel-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th scope="col">A</th>
+          <th scope="col">B</th>
+          <th scope="col">C</th>
+          <th scope="col">D</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">1</th>
+          <td><strong>KPI Indicator</strong></td>
+          <td><strong>Q3 Actuals</strong></td>
+          <td><strong>Q4 Target</strong></td>
+          <td><strong>Leverage Ratio</strong></td>
+        </tr>
+        <tr>
+          <th scope="row">2</th>
+          <td>Synergy Alignment</td>
+          <td>94.2%</td>
+          <td>98.5%</td>
+          <td>1.24</td>
+        </tr>
+        <tr>
+          <th scope="row">3</th>
+          <td>Core Competencies</td>
+          <td>High</td>
+          <td>Maximum</td>
+          <td>0.88</td>
+        </tr>
+        <tr>
+          <th scope="row">4</th>
+          <td>Bandwidth Allocation</td>
+          <td>110%</td>
+          <td>115%</td>
+          <td>4.12</td>
+        </tr>
+        <tr>
+          <th scope="row">5</th>
+          <td>Deliverable Impact</td>
+          <td>Optimized</td>
+          <td>Synergized</td>
+          <td>2.05</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script src="breakroom.js"></script>
