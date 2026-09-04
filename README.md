@@ -51,12 +51,15 @@ For Software:
 
 # Screenshots (Add at least 3)
 <img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20051717.png" />
+
 The timer in work mode with bubble wrap and random funny messages.
 
 <img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20051736.png" />
+
 Games section, quick change to excel sheets for boss situations and custom sound addition slots.
 
 <img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20052820.png" />
+
 The timer in break mode.
 
 # Diagrams
