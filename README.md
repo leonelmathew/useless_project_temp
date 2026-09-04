@@ -50,27 +50,35 @@ For Software:
 For Software:
 
 # Screenshots (Add at least 3)
-![Screenshot1](Add screenshot 1 here with proper name)
-*Add caption explaining what this shows*
+<img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20051717.png" />
+The timer in work mode with bubble wrap and random funny messages.
 
-![Screenshot2](Add screenshot 2 here with proper name)
-*Add caption explaining what this shows*
+<img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20051736.png" />
+Games section, quick change to excel sheets for boss situations and custom sound addition slots.
 
-![Screenshot3](Add screenshot 3 here with proper name)
-*Add caption explaining what this shows*
+<img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Screenshot%202026-09-04%20052820.png" />
+The timer in break mode.
 
 # Diagrams
-![Workflow](Add your workflow/architecture diagram here)
-*Add caption explaining your workflow*
+<img width="1280" height="640" alt="git (1)" src="https://github.com/leonelmathew/useless_project_temp/blob/main/Workflow.jpeg" />
+Figure 1: Anti-Productivity Timer System Architecture & Event Flow
+
+-Initialization: `background.js` sets default state (`break` mode first, 20m) in local storage and registers a 1-second alarm tick.
+
+
+-State Clock: The background worker decrements the countdown, switches between `break` and `work` modes at zero, and updates extension badge colors.
+
+
+-Tab Interception: Active during break mode; detects unauthorized external URLs, increments the closed counter, redirects to `breakroom.html`, and destroys the work tab.
+
+
+-Break Room Sync: `breakroom.js` polls local storage to sync the timer while handling interactions like Boss Panic Mode, the Canvas mini-game, and synthesized audio.
 
 
 ### Project Demo
 # Video
 https://youtu.be/XwIGWrFgtwU
 This video demonstrates the working of our project
-
-# Additional Demos
-[Add any extra demo materials/links]
 
 ## Team Contributions
 - Leonel Mathew Thuruthiyil: Backend
